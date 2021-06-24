@@ -2,7 +2,6 @@ const fs = require('fs');
 const path = require('path');
 const { Client } = require('pg');
 const copyFrom = require('pg-copy-streams').from;
-const csv = require('csv-parser');
 const config = require('../config');
 
 const client = new Client(config);
@@ -11,14 +10,14 @@ client.connect((err) => {
   if (err) {
     console.error(err);
   } else {
-    console.log('questions client connect success');
+    console.log('questions client connection success');
   }
 });
 
 const filepath = path.join(__dirname, '../CSV_files/questions.csv');
 
 const table = 'questionlist';
-// id,product_id,body,date_written,asker_name,asker_email,reported,helpful
+
 const createTable = `
 DROP TABLE IF EXISTS ${table};
 CREATE TABLE ${table}(
@@ -33,8 +32,8 @@ helpful INTEGER NOT NULL
 );`;
 
 client.query(createTable)
-  .then(() => console.log('Questions successfully created!'))
-  .catch(() => console.log('Table was not created'));
+  .then(() => console.log('questionlist successfully created!'))
+  .catch(() => console.log('questionlist was not created'));
 
 const stream = client.query(copyFrom(`COPY ${table} FROM STDIN DELIMITER ',' CSV HEADER;`));
 
@@ -59,11 +58,12 @@ CREATE INDEX IF NOT EXISTS questions_index ON ${table}(product_id)`;
 
 stream.on('success', () => {
   console.log(`completed seeding ${table}`);
+  console.timeEnd('execution time end');
   console.log('starting table alteration');
   console.time('alter execution time');
   client.query(alterTable)
     .then(() => {
-      console.log('table altered successfully');
+      console.log(`${table} altered successfully`);
       console.timeEnd('alter execution end');
       client.end();
     })
@@ -74,7 +74,6 @@ readStream.on('open', () => readStream.pipe(stream));
 
 readStream.on('end', () => {
   console.log(`success in reading files in ${table}`);
-  console.timeEnd('Execution time');
 });
 
 module.exports = client;
