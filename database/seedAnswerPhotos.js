@@ -23,7 +23,7 @@ DROP TABLE IF EXISTS ${table};
 CREATE TABLE ${table} (
 id SERIAL PRIMARY KEY NOT NULL,
 answer_id INTEGER NOT NULL,
-url VARCHAR(200) NOT NULL
+url VARCHAR(1000) NOT NULL
 );`;
 
 client.query(createTable)
