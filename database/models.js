@@ -3,11 +3,10 @@ const client = require('./index');
 const models = {
   getQuestions: (req, callback) => {
     const { product_id } = req.params;
-    const questionsQuery = `SELECT * FROM questionlist WHERE product_id = ${product_id} `;
-    const answersQuery = 'SELECT * FROM answerlist';
-    const photoQuery = 'SELECT * FROM answerPhotos';
+    const questionsQuery = `SELECT * FROM questionlist WHERE product_id = ${product_id}`;
+    const answersQuery = 'SELECT * FROM answerlist JOIN answerphotos ON answerlist.id = answerphotos.answer_id';
 
-    const container = (t1, t2, t3) => {
+    const container = (t1, t2) => {
       const questions = [];
       for (let i = 0; i < t1.length; i++) {
         questions.push(t1[i]);
@@ -15,29 +14,21 @@ const models = {
 
       for (let i = 0; i < questions.length; i++) {
         const answers = {};
-        const answerPhotos = [];
         questions[i].date_written = new Date(Number(questions[i].date_written));
         for (let j = 0; j < t2.length; j++) {
           if (questions[i].id === t2[j].question_id && answers.question_id === undefined) {
             answers[t2[j].id] = {
               id: t2[j].id,
               body: t2[j].body,
-              date_written: new Date(t2[j].date_written),
+              date_written: new Date(Number(t2[j].date_written)),
               answerer_name: t2[j].answerer_name,
               answerer_email: t2[j].answerer_email,
               helpful: t2[j].helpful,
-              // photos,
+              photos: [t2[j].url],
             };
-          }
-          for (let k = 0; k < t3.length; k++) {
-            if (answers.id === t3[k].answer_id) {
-              answerPhotos.push(t3[k].url);
-            }
-            answers.photos = answerPhotos;
           }
         }
         questions[i].answers = answers;
-        console.log('answers', answers);
       }
       return questions;
     };
@@ -49,15 +40,10 @@ const models = {
       client.query(answersQuery, (err1, results2) => {
         if (err1) {
           callback(err1);
+        } else {
+          const results = container(results1.rows, results2.rows);
+          callback(results);
         }
-        client.query(photoQuery, (err2, results3) => {
-          if (err2) {
-            callback(err2);
-          } else {
-            const results = container(results1.rows, results2.rows, results3.rows);
-            callback(results);
-          }
-        });
       });
     });
   },
@@ -95,10 +81,55 @@ const models = {
           callback(err1);
         } else {
           const results = photoContainer(results1.rows, results2.rows);
-          console.log(results);
           callback(null, results);
         }
       });
+    });
+  },
+
+  postQuestion: (req, callback) => {
+    const { body, asker_name, asker_email, product_id } = req.body;
+    console.log(req.body);
+    const queryStr = `INSERT INTO questionlist(body, asker_name, asker_email, product_id, date_written)
+    VALUES('${body}', '${asker_name}', '${asker_email}', ${product_id}, ${Date.now()})`;
+
+    client.query(queryStr, (err, results) => {
+      if (err) {
+        callback(err);
+      } else {
+        callback(null, results);
+      }
+    });
+  },
+
+  postAnswer: (req, callback) => {
+    const { question_id } = req.params;
+    const { body, answerer_name, answerer_email, photos } = req.body;
+    console.log(req.body);
+    const queryStr = `INSERT INTO answerlist(body, answerer_name, answerer_email, photos, date_written)
+    VALUES('${body}', '${answerer_name}', '${answerer_email}', ${photos}, ${Date.now()}) WHERE question_id = ${question_id}`;
+
+    client.query(queryStr, (err, results) => {
+      if (err) {
+        callback(err);
+      } else {
+        console.log(results);
+        callback(null, results);
+      }
+    });
+  },
+
+  updateHelpfulQuestion: (req, callback) => {
+    const { question_id } = req.params;
+    const { reported } = req.body;
+    const updateQuery = `UPDATE questionlist SET reported=${reported} WHERE id = ${question_id}`;
+
+    client.query(updateQuery, (err, results) => {
+      if (err) {
+        callback(err);
+      } else {
+        callback(null, results);
+      }
     });
   },
 

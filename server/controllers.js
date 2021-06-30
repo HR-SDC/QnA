@@ -21,6 +21,36 @@ const controllers = {
     });
   },
 
+  postQuestion: (req, res) => {
+    models.postQuestion(req, (err, results) => {
+      if (err) {
+        res.status(404).send(err);
+      } else {
+        res.status(200).send(results);
+      }
+    });
+  },
+
+  postAnswer: (req, res) => {
+    models.postAnswer(req, (err, results) => {
+      if (err) {
+        res.status(404).send(err);
+      } else {
+        res.status(200).send(results);
+      }
+    });
+  },
+
+  updateHelpfulQuestion: (req, res) => {
+    models.updateHelpfulQuestion(req, (err, results) => {
+      if (err) {
+        res.status(404).send(err);
+      } else {
+        res.status(200).send(results);
+      }
+    });
+  },
+
 };
 
 module.exports = controllers;
