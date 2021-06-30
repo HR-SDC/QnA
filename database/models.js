@@ -107,7 +107,7 @@ const models = {
     const { body, answerer_name, answerer_email, photos } = req.body;
     console.log(req.body);
     const queryStr = `INSERT INTO answerlist(body, answerer_name, answerer_email, photos, date_written)
-    VALUES('${body}', '${answerer_name}', '${answerer_email}', ${photos}, ${Date.now()}) WHERE question_id = ${question_id}`;
+    VALUES('${body}', '${answerer_name}', '${answerer_email}', ${photos}, '${Date.now()}') WHERE question_id = ${question_id}`;
 
     client.query(queryStr, (err, results) => {
       if (err) {
@@ -121,10 +121,52 @@ const models = {
 
   updateHelpfulQuestion: (req, callback) => {
     const { question_id } = req.params;
-    const { reported } = req.body;
-    const updateQuery = `UPDATE questionlist SET reported=${reported} WHERE id = ${question_id}`;
+    const { helpful } = req.body;
+    const updateQuery = `UPDATE questionlist SET helpful=${helpful + 1} WHERE id = ${question_id}`;
 
     client.query(updateQuery, (err, results) => {
+      if (err) {
+        callback(err);
+      } else {
+        callback(null, results);
+      }
+    });
+  },
+
+  reportQuestion: (req, callback) => {
+    const { question_id } = req.params;
+    const { reported } = req.body;
+    const reportQuery = `UPDATE questionlist SET reported=${reported} WHERE id = ${question_id}`;
+
+    client.query(reportQuery, (err, results) => {
+      if (err) {
+        callback(err);
+      } else {
+        callback(null, results);
+      }
+    });
+  },
+
+  updateHelpfulAnswer: (req, callback) => {
+    const { answer_id } = req.params;
+    const { helpful } = req.body;
+    const helpfulQuery = `UPDATE questionlist SET reported=${helpful + 1} WHERE id = ${answer_id}`;
+
+    client.query(helpfulQuery, (err, results) => {
+      if (err) {
+        callback(err);
+      } else {
+        callback(null, results);
+      }
+    });
+  },
+
+  reportAnswer: (req, callback) => {
+    const { answer_id } = req.params;
+    const { reported } = req.body;
+    const reportQuery = `UPDATE questionlist SET reported=${reported} WHERE id = ${answer_id}`;
+
+    client.query(reportQuery, (err, results) => {
       if (err) {
         callback(err);
       } else {

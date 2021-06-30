@@ -18,4 +18,17 @@ router
   .route('/qa/questions/:question_id/helpful')
   .put(controllers.updateHelpfulQuestion);
 
+router
+  .route('/qa/questions/:question_id/reported')
+  .put(controllers.reportQuestion);
+
+router
+  .route('/qa/answers/:answer_id/helpful')
+  .put(controllers.updateHelpfulAnswer);
+
+router
+  .route('/qa/answers/:answer_id/reported')
+  .put(controllers.reportAnswer);
+
+
 module.exports = router;
