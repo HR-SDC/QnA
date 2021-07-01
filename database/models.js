@@ -102,23 +102,6 @@ const models = {
     });
   },
 
-  postAnswer: (req, callback) => {
-    const { question_id } = req.params;
-    const { body, answerer_name, answerer_email, photos } = req.body;
-    console.log(req.body);
-    const queryStr = `INSERT INTO answerlist(body, answerer_name, answerer_email, photos, date_written)
-    VALUES('${body}', '${answerer_name}', '${answerer_email}', ${photos}, '${Date.now()}') WHERE question_id = ${question_id}`;
-
-    client.query(queryStr, (err, results) => {
-      if (err) {
-        callback(err);
-      } else {
-        console.log(results);
-        callback(null, results);
-      }
-    });
-  },
-
   updateHelpfulQuestion: (req, callback) => {
     const { question_id } = req.params;
     const { helpful } = req.body;
