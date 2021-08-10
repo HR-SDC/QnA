@@ -11,10 +11,8 @@ app.use(cors());
 
 app.listen((err) => {
   if (err) {
-    // eslint-disable-next-line no-console
     console.error(err);
   } else {
-    // eslint-disable-next-line no-console
     console.log('Connected! Listening on port:', PORT);
   }
 });
