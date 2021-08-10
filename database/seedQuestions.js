@@ -28,7 +28,7 @@ date_written BIGINT NOT NULL,
 asker_name VARCHAR(50) NOT NULL,
 asker_email VARCHAR(100) NOT NULL,
 reported BOOLEAN DEFAULT false,
-helpful INTEGER NOT NULL
+helpful INTEGER NOT NULL DEFAULT 0
 );`;
 
 client.query(createTable)
@@ -56,15 +56,15 @@ ADD COLUMN id SERIAL PRIMARY KEY;
 DROP INDEX IF EXISTS questions_index;
 CREATE INDEX IF NOT EXISTS questions_index ON ${table}(product_id)`;
 
-stream.on('success', () => {
+stream.on('finish', () => {
   console.log(`completed seeding ${table}`);
-  console.timeEnd('execution time end');
+  console.timeEnd('execution time');
   console.log('starting table alteration');
   console.time('alter execution time');
   client.query(alterTable)
     .then(() => {
       console.log(`${table} altered successfully`);
-      console.timeEnd('alter execution end');
+      console.timeEnd('alter execution time');
       client.end();
     })
     .catch((err) => console.error(err));

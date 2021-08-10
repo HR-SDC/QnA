@@ -10,7 +10,7 @@ client.connect((err) => {
   if (err) {
     console.error(err);
   } else {
-    console.log('answer_photo client connection success');
+    console.log('answerPhoto client connection success');
   }
 });
 
@@ -23,7 +23,7 @@ DROP TABLE IF EXISTS ${table};
 CREATE TABLE ${table} (
 id SERIAL PRIMARY KEY NOT NULL,
 answer_id INTEGER NOT NULL,
-url VARCHAR(200) NOT NULL
+url VARCHAR(1000) NOT NULL
 );`;
 
 client.query(createTable)
@@ -42,6 +42,27 @@ readStream.on('error', (err) => {
 
 stream.on('error', (err) => {
   console.log(`error in reading file ${err}`);
+});
+
+const alterTable = `
+ALTER TABLE ${table}
+DROP COLUMN id,
+ADD COLUMN id SERIAL PRIMARY KEY;
+DROP INDEX IF EXISTS photo_index;
+CREATE INDEX IF NOT EXISTS photo_index ON ${table}(answer_id)`;
+
+stream.on('finish', () => {
+  console.log(`completed seeding ${table}`);
+  console.timeEnd('execution time');
+  console.log('starting table alteration');
+  console.time('alter table execution');
+  client.query(alterTable)
+    .then(() => {
+      console.log(`${table} altered successfully`);
+      console.timeEnd('alter table execution');
+      client.end();
+    })
+    .catch((err) => console.error(err));
 });
 
 readStream.on('open', () => readStream.pipe(stream));

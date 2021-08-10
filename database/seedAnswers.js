@@ -28,7 +28,7 @@ date_written BIGINT NOT NULL,
 answerer_name VARCHAR(50) NOT NULL,
 answerer_email VARCHAR(100) NOT NULL,
 reported BOOLEAN DEFAULT false,
-helpful INTEGER NOT NULL
+helpful INTEGER NOT NULL DEFAULT 0
 );`;
 
 client.query(createTable)
@@ -54,9 +54,9 @@ ALTER TABLE ${table}
 DROP COLUMN id,
 ADD COLUMN id SERIAL PRIMARY KEY;
 DROP INDEX IF EXISTS answers_index;
-CREATE INDEX IF NOT EXISTS answers_index ON ${table}(product_id)`;
+CREATE INDEX IF NOT EXISTS answers_index ON ${table}(question_id)`;
 
-stream.on('success', () => {
+stream.on('finish', () => {
   console.log(`completed seeding ${table}`);
   console.timeEnd('execution time');
   console.log('starting table alteration');
@@ -64,7 +64,7 @@ stream.on('success', () => {
   client.query(alterTable)
     .then(() => {
       console.log(`${table} altered successfully`);
-      console.timeEnd('alter execution end');
+      console.timeEnd('alter table execution');
       client.end();
     })
     .catch((err) => console.error(err));
